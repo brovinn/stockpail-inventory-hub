@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { StockItem, StockItemInput } from "@/hooks/useStocks";
+import { StockItem } from "@/hooks/useStocks";
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -17,7 +17,12 @@ import {
 interface GroupedStockViewProps {
   stocks: StockItem[];
   groupBy: 'stock' | 'batch';
-  onUpdateStock?: (stockId: string, updatedStock: Partial<StockItemInput>) => Promise<void>;
+  onUpdateStock?: (stockId: string, updatedStock: Partial<{
+    batch_number?: string;
+    stock_number?: string;
+    description?: string;
+    quantity?: number;
+  }>) => Promise<void>;
   onDeleteStock?: (stockId: string) => Promise<void>;
 }
 
@@ -165,7 +170,7 @@ export const GroupedStockView = ({
                     <table className="w-full">
                       <thead>
                         <tr className="border-b bg-muted/30">
-                            <th className="text-left p-3 font-semibold">
+                          <th className="text-left p-3 font-semibold">
                             {groupBy === 'stock' ? 'Batch Number' : 'Stock Number'}
                           </th>
                           <th className="text-left p-3 font-semibold">Description</th>

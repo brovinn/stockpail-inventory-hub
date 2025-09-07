@@ -46,18 +46,18 @@ const Layout = () => {
                     Home
                   </NavLink>
                 </TabsTrigger>
-                <TabsTrigger value="/presentation" asChild>
-                  <NavLink 
-                    to="/presentation" 
-                    className={({ isActive }) => 
-                      `text-white hover:text-white/80 data-[state=active]:bg-white/20 data-[state=active]:text-white ${
-                        isActive ? 'bg-white/20' : ''
-                      }`
-                    }
-                  >
-                    Forms & Reports
-                  </NavLink>
-                </TabsTrigger>
+            <TabsTrigger value="/analytics" asChild>
+              <NavLink 
+                to="/analytics" 
+                className={({ isActive }) => 
+                  `text-white hover:text-white/80 data-[state=active]:bg-white/20 data-[state=active]:text-white ${
+                    isActive ? 'bg-white/20' : ''
+                  }`
+                }
+              >
+                Analytics
+              </NavLink>
+            </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>

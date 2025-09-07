@@ -1,24 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import type { Database } from "@/integrations/supabase/types";
 
-export interface StockItem {
-  id: string;
-  batch_number: string;
-  stock_number: string;
-  description: string;
-  quantity: number;
-  date_added: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface StockItemInput {
-  batch_number: string;
-  stock_number: string;
-  description: string;
-  quantity: number;
-}
+export type StockItem = Database['public']['Tables']['stocks']['Row'];
+export type StockItemInput = Database['public']['Tables']['stocks']['Insert'];
 
 export const useStocks = () => {
   const [stocks, setStocks] = useState<StockItem[]>([]);
@@ -48,11 +34,16 @@ export const useStocks = () => {
   };
 
   // Add new stock
-  const addStock = async (stockData: StockItemInput): Promise<StockItem> => {
+  const addStock = async (stockData: Omit<StockItemInput, 'id' | 'created_at' | 'updated_at' | 'date_added'>): Promise<StockItem> => {
     try {
       const { data, error } = await supabase
         .from('stocks')
-        .insert([stockData])
+        .insert([{
+          batch_number: stockData.batch_number,
+          stock_number: stockData.stock_number,
+          description: stockData.description,
+          quantity: stockData.quantity || 0,
+        }])
         .select()
         .single();
 
@@ -78,7 +69,7 @@ export const useStocks = () => {
   };
 
   // Update stock
-  const updateStock = async (id: string, updates: Partial<StockItemInput>): Promise<void> => {
+  const updateStock = async (id: string, updates: Partial<Omit<StockItemInput, 'id' | 'created_at' | 'updated_at' | 'date_added'>>): Promise<void> => {
     try {
       const { data, error } = await supabase
         .from('stocks')
