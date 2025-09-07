@@ -3,8 +3,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Search, ArrowUpDown, Package2, Calendar, Edit, Trash2, Eye } from "lucide-react";
+import { GroupedStockView } from "./GroupedStockView";
+import { 
+  Search, 
+  ArrowUpDown, 
+  Package2, 
+  Calendar, 
+  Edit, 
+  Trash2, 
+  Eye,
+  Layers,
+  List
+} from "lucide-react";
 
 interface StockItem {
   id: string;
@@ -28,6 +40,7 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>('dateAdded');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [viewMode, setViewMode] = useState<'list' | 'grouped'>('list');
   const { toast } = useToast();
 
   const handleStockAction = (action: string, stock: StockItem) => {
@@ -77,14 +90,18 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
     }
   };
 
-  const filteredAndSortedStocks = useMemo(() => {
-    let filtered = stocks.filter(stock =>
+  // Filter stocks based on search term
+  const filteredStocks = useMemo(() => {
+    return stocks.filter(stock =>
       stock.batchNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock.stockNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
+  }, [stocks, searchTerm]);
 
-    return filtered.sort((a, b) => {
+  // Sort filtered stocks
+  const filteredAndSortedStocks = useMemo(() => {
+    return filteredStocks.sort((a, b) => {
       let aValue = a[sortField];
       let bValue = b[sortField];
 
@@ -99,7 +116,7 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
         return aValue < bValue ? 1 : -1;
       }
     });
-  }, [stocks, searchTerm, sortField, sortDirection]);
+  }, [filteredStocks, sortField, sortDirection]);
 
   const getQuantityBadgeVariant = (quantity: number) => {
     if (quantity === 0) return "destructive";
@@ -115,10 +132,10 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
           <CardTitle>Stock Inventory</CardTitle>
         </div>
         <CardDescription>
-          View, search, and sort your stock items
+          View, search, and sort your stock items with grouping options
         </CardDescription>
         
-        <div className="flex gap-4 items-center pt-4">
+        <div className="flex gap-4 items-center pt-4 flex-wrap">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
@@ -128,142 +145,192 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
               className="pl-10 focus:ring-primary"
             />
           </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="flex items-center gap-2"
+            >
+              <List className="h-4 w-4" />
+              List View
+            </Button>
+            <Button
+              variant={viewMode === 'grouped' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grouped')}
+              className="flex items-center gap-2"
+            >
+              <Layers className="h-4 w-4" />
+              Grouped View
+            </Button>
+          </div>
+          
           <div className="text-sm text-muted-foreground">
-            {filteredAndSortedStocks.length} of {stocks.length} items
+            {filteredStocks.length} of {stocks.length} items
           </div>
         </div>
       </CardHeader>
       
       <CardContent>
-        {filteredAndSortedStocks.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            {stocks.length === 0 ? (
-              <div>
-                <Package2 className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                <p>No stock items yet. Add your first item above.</p>
-              </div>
-            ) : (
-              <div>
-                <Search className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                <p>No items match your search criteria.</p>
-              </div>
-            )}
-          </div>
+        {viewMode === 'grouped' ? (
+          <Tabs defaultValue="stock" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="stock">Group by Stock Number</TabsTrigger>
+              <TabsTrigger value="batch">Group by Batch Number</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="stock" className="space-y-4">
+              <GroupedStockView
+                stocks={filteredStocks}
+                groupBy="stock"
+                onUpdateStock={onUpdateStock}
+                onDeleteStock={onDeleteStock}
+              />
+            </TabsContent>
+            
+            <TabsContent value="batch" className="space-y-4">
+              <GroupedStockView
+                stocks={filteredStocks}
+                groupBy="batch"
+                onUpdateStock={onUpdateStock}
+                onDeleteStock={onDeleteStock}
+              />
+            </TabsContent>
+          </Tabs>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSort('batchNumber')}
-                      className="h-auto p-0 font-semibold text-foreground hover:text-primary"
-                    >
-                      Batch Number
-                      <ArrowUpDown className="ml-2 h-3 w-3" />
-                    </Button>
-                  </th>
-                  <th className="text-left p-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSort('stockNumber')}
-                      className="h-auto p-0 font-semibold text-foreground hover:text-primary"
-                    >
-                      Stock Number
-                      <ArrowUpDown className="ml-2 h-3 w-3" />
-                    </Button>
-                  </th>
-                  <th className="text-left p-3">Description</th>
-                  <th className="text-left p-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSort('quantity')}
-                      className="h-auto p-0 font-semibold text-foreground hover:text-primary"
-                    >
-                      Quantity
-                      <ArrowUpDown className="ml-2 h-3 w-3" />
-                    </Button>
-                  </th>
-                  <th className="text-left p-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSort('dateAdded')}
-                      className="h-auto p-0 font-semibold text-foreground hover:text-primary"
-                    >
-                      Date Added
-                      <ArrowUpDown className="ml-2 h-3 w-3" />
-                    </Button>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAndSortedStocks.map((stock) => (
-                  <tr key={stock.id} className="border-b hover:bg-muted/50 transition-colors">
-                    <td className="p-3">
-                      <div className="font-mono text-sm font-semibold text-primary">
-                        {stock.batchNumber}
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <div className="font-mono text-sm font-semibold">
-                        {stock.stockNumber}
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <div className="text-sm text-muted-foreground max-w-xs truncate">
-                        {stock.description || "No description"}
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <Badge variant={getQuantityBadgeVariant(stock.quantity)}>
-                        {stock.quantity}
-                      </Badge>
-                    </td>
-                     <td className="p-3">
-                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                         <Calendar className="h-3 w-3" />
-                         {stock.dateAdded}
-                       </div>
-                     </td>
-                     <td className="p-3">
-                       <div className="flex items-center gap-1">
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => handleStockAction("view", stock)}
-                           className="h-8 w-8 p-0"
-                         >
-                           <Eye className="h-4 w-4" />
-                         </Button>
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => handleStockAction("edit", stock)}
-                           className="h-8 w-8 p-0"
-                         >
-                           <Edit className="h-4 w-4" />
-                         </Button>
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => handleStockAction("delete", stock)}
-                           className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                         >
-                           <Trash2 className="h-4 w-4" />
-                         </Button>
-                       </div>
-                     </td>
-                   <th className="text-left p-3">Actions</th>
-                 </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          // Original list view
+          filteredAndSortedStocks.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              {stocks.length === 0 ? (
+                <div>
+                  <Package2 className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                  <p>No stock items yet. Add your first item above.</p>
+                </div>
+              ) : (
+                <div>
+                  <Search className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                  <p>No items match your search criteria.</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSort('batchNumber')}
+                        className="h-auto p-0 font-semibold text-foreground hover:text-primary"
+                      >
+                        Batch Number
+                        <ArrowUpDown className="ml-2 h-3 w-3" />
+                      </Button>
+                    </th>
+                    <th className="text-left p-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSort('stockNumber')}
+                        className="h-auto p-0 font-semibold text-foreground hover:text-primary"
+                      >
+                        Stock Number
+                        <ArrowUpDown className="ml-2 h-3 w-3" />
+                      </Button>
+                    </th>
+                    <th className="text-left p-3">Description</th>
+                    <th className="text-left p-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSort('quantity')}
+                        className="h-auto p-0 font-semibold text-foreground hover:text-primary"
+                      >
+                        Quantity
+                        <ArrowUpDown className="ml-2 h-3 w-3" />
+                      </Button>
+                    </th>
+                    <th className="text-left p-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSort('dateAdded')}
+                        className="h-auto p-0 font-semibold text-foreground hover:text-primary"
+                      >
+                        Date Added
+                        <ArrowUpDown className="ml-2 h-3 w-3" />
+                      </Button>
+                    </th>
+                    <th className="text-left p-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredAndSortedStocks.map((stock) => (
+                    <tr key={stock.id} className="border-b hover:bg-muted/50 transition-colors">
+                      <td className="p-3">
+                        <div className="font-mono text-sm font-semibold text-primary">
+                          {stock.batchNumber}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="font-mono text-sm font-semibold">
+                          {stock.stockNumber}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm text-muted-foreground max-w-xs truncate">
+                          {stock.description || "No description"}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <Badge variant={getQuantityBadgeVariant(stock.quantity)}>
+                          {stock.quantity}
+                        </Badge>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          {stock.dateAdded}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleStockAction("view", stock)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleStockAction("edit", stock)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleStockAction("delete", stock)}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
         )}
       </CardContent>
     </Card>
