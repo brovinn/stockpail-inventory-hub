@@ -29,8 +29,8 @@ interface StockItem {
 
 interface StockTableProps {
   stocks: StockItem[];
-  onUpdateStock?: (stockId: string, updatedStock: Partial<StockItem>) => void;
-  onDeleteStock?: (stockId: string) => void;
+  onUpdateStock?: (stockId: string, updatedStock: Partial<StockItem>) => Promise<StockItem>;
+  onDeleteStock?: (stockId: string) => Promise<void>;
 }
 
 type SortField = 'batchNumber' | 'stockNumber' | 'quantity' | 'dateAdded';

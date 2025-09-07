@@ -25,8 +25,8 @@ interface StockItem {
 interface GroupedStockViewProps {
   stocks: StockItem[];
   groupBy: 'stock' | 'batch';
-  onUpdateStock?: (stockId: string, updatedStock: Partial<StockItem>) => void;
-  onDeleteStock?: (stockId: string) => void;
+  onUpdateStock?: (stockId: string, updatedStock: Partial<StockItem>) => Promise<StockItem>;
+  onDeleteStock?: (stockId: string) => Promise<void>;
 }
 
 interface GroupedData {

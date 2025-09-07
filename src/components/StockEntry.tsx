@@ -17,7 +17,7 @@ interface StockItem {
 }
 
 interface StockEntryProps {
-  onAddStock: (stock: StockItem) => void;
+  onAddStock: (stock: Omit<StockItem, 'id' | 'dateAdded'>) => Promise<StockItem>;
 }
 
 export const StockEntry = ({ onAddStock }: StockEntryProps) => {
@@ -29,7 +29,7 @@ export const StockEntry = ({ onAddStock }: StockEntryProps) => {
   });
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.batchNumber || !formData.stockNumber) {
@@ -41,24 +41,23 @@ export const StockEntry = ({ onAddStock }: StockEntryProps) => {
       return;
     }
 
-    const newStock: StockItem = {
-      id: crypto.randomUUID(),
-      ...formData,
-      dateAdded: new Date().toISOString().split('T')[0],
-    };
-
-    onAddStock(newStock);
-    setFormData({
-      batchNumber: "",
-      stockNumber: "",
-      description: "",
-      quantity: 0,
-    });
-
-    toast({
-      title: "Stock added successfully",
-      description: `Added ${formData.stockNumber} to inventory.`,
-    });
+    try {
+      await onAddStock({
+        batchNumber: formData.batchNumber,
+        stockNumber: formData.stockNumber,
+        description: formData.description,
+        quantity: formData.quantity,
+      });
+      
+      setFormData({
+        batchNumber: "",
+        stockNumber: "",
+        description: "",
+        quantity: 0,
+      });
+    } catch (error) {
+      // Error is already handled in the hook
+    }
   };
 
   const handleInputChange = (field: string, value: string | number) => {

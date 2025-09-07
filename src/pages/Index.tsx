@@ -1,35 +1,18 @@
-import { useState } from "react";
 import { StockEntry } from "@/components/StockEntry";
 import { StockTable } from "@/components/StockTable";
 import { StockOverview } from "@/components/StockOverview";
-import { useToast } from "@/hooks/use-toast";
-
-interface StockItem {
-  id: string;
-  batchNumber: string;
-  stockNumber: string;
-  description: string;
-  quantity: number;
-  dateAdded: string;
-}
+import { useStocks } from "@/hooks/useStocks";
 
 const Index = () => {
-  const [stocks, setStocks] = useState<StockItem[]>([]);
-  const { toast } = useToast();
+  const { stocks, loading, addStock, updateStock, deleteStock } = useStocks();
 
-  const handleAddStock = (newStock: StockItem) => {
-    setStocks(prev => [...prev, newStock]);
-  };
-
-  const handleUpdateStock = (stockId: string, updatedData: Partial<StockItem>) => {
-    setStocks(prev => prev.map(stock => 
-      stock.id === stockId ? { ...stock, ...updatedData } : stock
-    ));
-  };
-
-  const handleDeleteStock = (stockId: string) => {
-    setStocks(prev => prev.filter(stock => stock.id !== stockId));
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-lg">Loading stocks...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -37,13 +20,13 @@ const Index = () => {
       <StockOverview stocks={stocks} />
       
       {/* Stock Entry Form */}
-      <StockEntry onAddStock={handleAddStock} />
+      <StockEntry onAddStock={addStock} />
       
       {/* Stock Table */}
       <StockTable 
         stocks={stocks} 
-        onUpdateStock={handleUpdateStock}
-        onDeleteStock={handleDeleteStock}
+        onUpdateStock={updateStock}
+        onDeleteStock={deleteStock}
       />
     </div>
   );
