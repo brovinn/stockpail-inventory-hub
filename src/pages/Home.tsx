@@ -1,6 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { 
   Package, 
   TrendingUp, 
@@ -13,12 +15,42 @@ import {
 } from "lucide-react";
 
 const Home = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const handleQuickAction = (actionType: string) => {
+    switch (actionType) {
+      case "dashboard":
+        navigate("/");
+        toast({
+          title: "Navigating to Dashboard",
+          description: "Opening main inventory dashboard",
+        });
+        break;
+      case "report":
+        navigate("/presentation");
+        toast({
+          title: "Opening Report Generator",
+          description: "Navigate to Forms & Reports section",
+        });
+        break;
+      case "analytics":
+        toast({
+          title: "Analytics Dashboard",
+          description: "Advanced analytics coming soon!",
+        });
+        break;
+      default:
+        break;
+    }
+  };
+
   const quickActions = [
     {
       title: "Add New Stock",
       description: "Quickly add new inventory items",
       icon: Package,
       action: "Go to Dashboard",
+      actionType: "dashboard",
       variant: "default" as const
     },
     {
@@ -26,6 +58,7 @@ const Home = () => {
       description: "Create stock reports and analytics",
       icon: FileText,
       action: "Create Report",
+      actionType: "report",
       variant: "secondary" as const
     },
     {
@@ -33,6 +66,7 @@ const Home = () => {
       description: "Check stock trends and insights",
       icon: BarChart3,
       action: "View Charts",
+      actionType: "analytics",
       variant: "outline" as const
     }
   ];
@@ -112,7 +146,11 @@ const Home = () => {
                 <CardDescription>{action.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant={action.variant} className="w-full">
+                <Button 
+                  variant={action.variant} 
+                  className="w-full"
+                  onClick={() => handleQuickAction(action.actionType)}
+                >
                   {action.action}
                 </Button>
               </CardContent>

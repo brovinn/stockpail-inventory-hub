@@ -17,7 +17,7 @@ import {
   Edit,
   Trash2
 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const Presentation = () => {
   const { toast } = useToast();
@@ -79,6 +79,59 @@ const Presentation = () => {
       status: "Active"
     }
   ];
+
+  const handleFormAction = (action: string, formId?: number) => {
+    switch (action) {
+      case "view":
+        toast({
+          title: "Opening Form",
+          description: `Viewing form ${formId}`,
+        });
+        break;
+      case "edit":
+        toast({
+          title: "Editing Form",
+          description: `Opening form editor for form ${formId}`,
+        });
+        break;
+      case "download":
+        toast({
+          title: "Downloading Form",
+          description: `Form ${formId} download started`,
+        });
+        break;
+      case "delete":
+        toast({
+          title: "Form Deleted",
+          description: `Form ${formId} has been deleted`,
+          variant: "destructive",
+        });
+        break;
+    }
+  };
+
+  const handleReportAction = (action: string, reportId?: number) => {
+    switch (action) {
+      case "view":
+        toast({
+          title: "Opening Report",
+          description: `Viewing report ${reportId}`,
+        });
+        break;
+      case "settings":
+        toast({
+          title: "Report Settings",
+          description: `Configuring report ${reportId}`,
+        });
+        break;
+      case "download":
+        toast({
+          title: "Downloading Report",
+          description: `Report ${reportId} download started`,
+        });
+        break;
+    }
+  };
 
   const handleCreateForm = () => {
     if (!formName.trim()) {
@@ -228,16 +281,32 @@ const Presentation = () => {
                       <p className="text-xs text-muted-foreground">Created: {form.created}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleFormAction("view", form.id)}
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleFormAction("edit", form.id)}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleFormAction("download", form.id)}
+                      >
                         <Download className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleFormAction("delete", form.id)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -323,13 +392,25 @@ const Presentation = () => {
                       <p className="text-xs text-muted-foreground">Last Generated: {report.lastGenerated}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleReportAction("view", report.id)}
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleReportAction("settings", report.id)}
+                      >
                         <Settings className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleReportAction("download", report.id)}
+                      >
                         <Download className="h-4 w-4" />
                       </Button>
                     </div>

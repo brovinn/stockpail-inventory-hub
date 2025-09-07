@@ -2,7 +2,7 @@ import { useState } from "react";
 import { StockEntry } from "@/components/StockEntry";
 import { StockTable } from "@/components/StockTable";
 import { StockOverview } from "@/components/StockOverview";
-import { Package } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface StockItem {
   id: string;
@@ -15,9 +15,20 @@ interface StockItem {
 
 const Index = () => {
   const [stocks, setStocks] = useState<StockItem[]>([]);
+  const { toast } = useToast();
 
   const handleAddStock = (newStock: StockItem) => {
     setStocks(prev => [...prev, newStock]);
+  };
+
+  const handleUpdateStock = (stockId: string, updatedData: Partial<StockItem>) => {
+    setStocks(prev => prev.map(stock => 
+      stock.id === stockId ? { ...stock, ...updatedData } : stock
+    ));
+  };
+
+  const handleDeleteStock = (stockId: string) => {
+    setStocks(prev => prev.filter(stock => stock.id !== stockId));
   };
 
   return (
@@ -29,7 +40,11 @@ const Index = () => {
       <StockEntry onAddStock={handleAddStock} />
       
       {/* Stock Table */}
-      <StockTable stocks={stocks} />
+      <StockTable 
+        stocks={stocks} 
+        onUpdateStock={handleUpdateStock}
+        onDeleteStock={handleDeleteStock}
+      />
     </div>
   );
 };

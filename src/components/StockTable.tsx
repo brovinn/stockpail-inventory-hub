@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, ArrowUpDown, Package2, Calendar } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Search, ArrowUpDown, Package2, Calendar, Edit, Trash2, Eye } from "lucide-react";
 
 interface StockItem {
   id: string;
@@ -16,15 +17,56 @@ interface StockItem {
 
 interface StockTableProps {
   stocks: StockItem[];
+  onUpdateStock?: (stockId: string, updatedStock: Partial<StockItem>) => void;
+  onDeleteStock?: (stockId: string) => void;
 }
 
 type SortField = 'batchNumber' | 'stockNumber' | 'quantity' | 'dateAdded';
 type SortDirection = 'asc' | 'desc';
 
-export const StockTable = ({ stocks }: StockTableProps) => {
+export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>('dateAdded');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const { toast } = useToast();
+
+  const handleStockAction = (action: string, stock: StockItem) => {
+    switch (action) {
+      case "view":
+        toast({
+          title: "Stock Details",
+          description: `Viewing details for ${stock.stockNumber}`,
+        });
+        break;
+      case "edit":
+        toast({
+          title: "Edit Stock",
+          description: `Opening editor for ${stock.stockNumber}`,
+        });
+        if (onUpdateStock) {
+          // This would typically open a modal or form for editing
+          const updatedQuantity = prompt(`Enter new quantity for ${stock.stockNumber}:`, stock.quantity.toString());
+          if (updatedQuantity !== null && !isNaN(Number(updatedQuantity))) {
+            onUpdateStock(stock.id, { quantity: Number(updatedQuantity) });
+            toast({
+              title: "Stock Updated",
+              description: `Quantity updated for ${stock.stockNumber}`,
+            });
+          }
+        }
+        break;
+      case "delete":
+        if (onDeleteStock && confirm(`Are you sure you want to delete stock item ${stock.stockNumber}?`)) {
+          onDeleteStock(stock.id);
+          toast({
+            title: "Stock Deleted",
+            description: `${stock.stockNumber} has been removed from inventory`,
+            variant: "destructive",
+          });
+        }
+        break;
+    }
+  };
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -182,13 +224,42 @@ export const StockTable = ({ stocks }: StockTableProps) => {
                         {stock.quantity}
                       </Badge>
                     </td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        {stock.dateAdded}
-                      </div>
-                    </td>
-                  </tr>
+                     <td className="p-3">
+                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                         <Calendar className="h-3 w-3" />
+                         {stock.dateAdded}
+                       </div>
+                     </td>
+                     <td className="p-3">
+                       <div className="flex items-center gap-1">
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => handleStockAction("view", stock)}
+                           className="h-8 w-8 p-0"
+                         >
+                           <Eye className="h-4 w-4" />
+                         </Button>
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => handleStockAction("edit", stock)}
+                           className="h-8 w-8 p-0"
+                         >
+                           <Edit className="h-4 w-4" />
+                         </Button>
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => handleStockAction("delete", stock)}
+                           className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                         >
+                           <Trash2 className="h-4 w-4" />
+                         </Button>
+                       </div>
+                     </td>
+                   <th className="text-left p-3">Actions</th>
+                 </tr>
                 ))}
               </tbody>
             </table>
