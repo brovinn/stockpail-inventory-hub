@@ -2,15 +2,7 @@ import { useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Package, TrendingUp, AlertTriangle, BarChart3, Layers } from "lucide-react";
-
-interface StockItem {
-  id: string;
-  batchNumber: string;
-  stockNumber: string;
-  description: string;
-  quantity: number;
-  dateAdded: string;
-}
+import { StockItem } from "@/hooks/useStocks";
 
 interface StockOverviewProps {
   stocks: StockItem[];
@@ -24,8 +16,8 @@ export const StockOverview = ({ stocks }: StockOverviewProps) => {
     const outOfStockItems = stocks.filter(stock => stock.quantity === 0).length;
     
     // Group statistics
-    const uniqueStockNumbers = new Set(stocks.map(stock => stock.stockNumber)).size;
-    const uniqueBatchNumbers = new Set(stocks.map(stock => stock.batchNumber)).size;
+    const uniqueStockNumbers = new Set(stocks.map(stock => stock.stock_number)).size;
+    const uniqueBatchNumbers = new Set(stocks.map(stock => stock.batch_number)).size;
     
     return {
       totalItems,

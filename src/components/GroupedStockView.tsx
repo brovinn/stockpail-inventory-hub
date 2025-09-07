@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { StockItem, StockItemInput } from "@/hooks/useStocks";
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -13,19 +14,10 @@ import {
   Eye 
 } from "lucide-react";
 
-interface StockItem {
-  id: string;
-  batchNumber: string;
-  stockNumber: string;
-  description: string;
-  quantity: number;
-  dateAdded: string;
-}
-
 interface GroupedStockViewProps {
   stocks: StockItem[];
   groupBy: 'stock' | 'batch';
-  onUpdateStock?: (stockId: string, updatedStock: Partial<StockItem>) => Promise<StockItem>;
+  onUpdateStock?: (stockId: string, updatedStock: Partial<StockItemInput>) => Promise<void>;
   onDeleteStock?: (stockId: string) => Promise<void>;
 }
 
@@ -48,7 +40,7 @@ export const GroupedStockView = ({
 
   // Group stocks by the specified field
   const groupedStocks: GroupedData = stocks.reduce((groups, stock) => {
-    const groupKey = groupBy === 'stock' ? stock.stockNumber : stock.batchNumber;
+    const groupKey = groupBy === 'stock' ? stock.stock_number : stock.batch_number;
     
     if (!groups[groupKey]) {
       groups[groupKey] = {
@@ -80,31 +72,31 @@ export const GroupedStockView = ({
       case "view":
         toast({
           title: "Stock Details",
-          description: `Viewing details for ${stock.stockNumber}`,
+          description: `Viewing details for ${stock.stock_number}`,
         });
         break;
       case "edit":
         toast({
           title: "Edit Stock",
-          description: `Opening editor for ${stock.stockNumber}`,
+          description: `Opening editor for ${stock.stock_number}`,
         });
         if (onUpdateStock) {
-          const updatedQuantity = prompt(`Enter new quantity for ${stock.stockNumber}:`, stock.quantity.toString());
+          const updatedQuantity = prompt(`Enter new quantity for ${stock.stock_number}:`, stock.quantity.toString());
           if (updatedQuantity !== null && !isNaN(Number(updatedQuantity))) {
             onUpdateStock(stock.id, { quantity: Number(updatedQuantity) });
             toast({
               title: "Stock Updated",
-              description: `Quantity updated for ${stock.stockNumber}`,
+              description: `Quantity updated for ${stock.stock_number}`,
             });
           }
         }
         break;
       case "delete":
-        if (onDeleteStock && confirm(`Are you sure you want to delete stock item ${stock.stockNumber}?`)) {
+        if (onDeleteStock && confirm(`Are you sure you want to delete stock item ${stock.stock_number}?`)) {
           onDeleteStock(stock.id);
           toast({
             title: "Stock Deleted",
-            description: `${stock.stockNumber} has been removed from inventory`,
+            description: `${stock.stock_number} has been removed from inventory`,
             variant: "destructive",
           });
         }
@@ -173,7 +165,7 @@ export const GroupedStockView = ({
                     <table className="w-full">
                       <thead>
                         <tr className="border-b bg-muted/30">
-                          <th className="text-left p-3 font-semibold">
+                            <th className="text-left p-3 font-semibold">
                             {groupBy === 'stock' ? 'Batch Number' : 'Stock Number'}
                           </th>
                           <th className="text-left p-3 font-semibold">Description</th>
@@ -184,12 +176,12 @@ export const GroupedStockView = ({
                       </thead>
                       <tbody>
                         {groupData.items
-                          .sort((a, b) => b.dateAdded.localeCompare(a.dateAdded))
+                          .sort((a, b) => b.date_added.localeCompare(a.date_added))
                           .map((stock) => (
                           <tr key={stock.id} className="border-b hover:bg-muted/30 transition-colors">
                             <td className="p-3">
                               <div className="font-mono text-sm font-semibold text-primary">
-                                {groupBy === 'stock' ? stock.batchNumber : stock.stockNumber}
+                                {groupBy === 'stock' ? stock.batch_number : stock.stock_number}
                               </div>
                             </td>
                             <td className="p-3">
@@ -205,7 +197,7 @@ export const GroupedStockView = ({
                             <td className="p-3">
                               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                 <Calendar className="h-3 w-3" />
-                                {stock.dateAdded}
+                                {new Date(stock.date_added).toLocaleDateString()}
                               </div>
                             </td>
                             <td className="p-3">

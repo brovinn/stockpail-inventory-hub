@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { GroupedStockView } from "./GroupedStockView";
+import { StockItem, StockItemInput } from "@/hooks/useStocks";
 import { 
   Search, 
   ArrowUpDown, 
@@ -18,27 +19,18 @@ import {
   List
 } from "lucide-react";
 
-interface StockItem {
-  id: string;
-  batchNumber: string;
-  stockNumber: string;
-  description: string;
-  quantity: number;
-  dateAdded: string;
-}
-
 interface StockTableProps {
   stocks: StockItem[];
-  onUpdateStock?: (stockId: string, updatedStock: Partial<StockItem>) => Promise<StockItem>;
+  onUpdateStock?: (stockId: string, updatedStock: Partial<StockItemInput>) => Promise<void>;
   onDeleteStock?: (stockId: string) => Promise<void>;
 }
 
-type SortField = 'batchNumber' | 'stockNumber' | 'quantity' | 'dateAdded';
+type SortField = 'batch_number' | 'stock_number' | 'quantity' | 'date_added';
 type SortDirection = 'asc' | 'desc';
 
 export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortField, setSortField] = useState<SortField>('dateAdded');
+  const [sortField, setSortField] = useState<SortField>('date_added');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [viewMode, setViewMode] = useState<'list' | 'grouped'>('list');
   const { toast } = useToast();
@@ -48,32 +40,32 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
       case "view":
         toast({
           title: "Stock Details",
-          description: `Viewing details for ${stock.stockNumber}`,
+          description: `Viewing details for ${stock.stock_number}`,
         });
         break;
       case "edit":
         toast({
           title: "Edit Stock",
-          description: `Opening editor for ${stock.stockNumber}`,
+          description: `Opening editor for ${stock.stock_number}`,
         });
         if (onUpdateStock) {
           // This would typically open a modal or form for editing
-          const updatedQuantity = prompt(`Enter new quantity for ${stock.stockNumber}:`, stock.quantity.toString());
+          const updatedQuantity = prompt(`Enter new quantity for ${stock.stock_number}:`, stock.quantity.toString());
           if (updatedQuantity !== null && !isNaN(Number(updatedQuantity))) {
             onUpdateStock(stock.id, { quantity: Number(updatedQuantity) });
             toast({
               title: "Stock Updated",
-              description: `Quantity updated for ${stock.stockNumber}`,
+              description: `Quantity updated for ${stock.stock_number}`,
             });
           }
         }
         break;
       case "delete":
-        if (onDeleteStock && confirm(`Are you sure you want to delete stock item ${stock.stockNumber}?`)) {
+        if (onDeleteStock && confirm(`Are you sure you want to delete stock item ${stock.stock_number}?`)) {
           onDeleteStock(stock.id);
           toast({
             title: "Stock Deleted",
-            description: `${stock.stockNumber} has been removed from inventory`,
+            description: `${stock.stock_number} has been removed from inventory`,
             variant: "destructive",
           });
         }
@@ -93,8 +85,8 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
   // Filter stocks based on search term
   const filteredStocks = useMemo(() => {
     return stocks.filter(stock =>
-      stock.batchNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      stock.stockNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      stock.batch_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      stock.stock_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [stocks, searchTerm]);
@@ -224,7 +216,7 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleSort('batchNumber')}
+                        onClick={() => handleSort('batch_number')}
                         className="h-auto p-0 font-semibold text-foreground hover:text-primary"
                       >
                         Batch Number
@@ -235,7 +227,7 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleSort('stockNumber')}
+                        onClick={() => handleSort('stock_number')}
                         className="h-auto p-0 font-semibold text-foreground hover:text-primary"
                       >
                         Stock Number
@@ -258,7 +250,7 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleSort('dateAdded')}
+                        onClick={() => handleSort('date_added')}
                         className="h-auto p-0 font-semibold text-foreground hover:text-primary"
                       >
                         Date Added
@@ -273,12 +265,12 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
                     <tr key={stock.id} className="border-b hover:bg-muted/50 transition-colors">
                       <td className="p-3">
                         <div className="font-mono text-sm font-semibold text-primary">
-                          {stock.batchNumber}
+                          {stock.batch_number}
                         </div>
                       </td>
                       <td className="p-3">
                         <div className="font-mono text-sm font-semibold">
-                          {stock.stockNumber}
+                          {stock.stock_number}
                         </div>
                       </td>
                       <td className="p-3">
@@ -294,7 +286,7 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
                       <td className="p-3">
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          {stock.dateAdded}
+                          {new Date(stock.date_added).toLocaleDateString()}
                         </div>
                       </td>
                       <td className="p-3">
