@@ -5,16 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { StockItem } from "@/hooks/useStocks";
+import { StockItem, StockItemInput } from "@/hooks/useStocks";
 import { Package, Plus } from "lucide-react";
 
-interface StockEntryProps {
-  onAddStock: (stock: {
-    batch_number: string;
-    stock_number: string;
-    description: string;
-    quantity: number;
-  }) => Promise<StockItem>;
+export interface StockEntryProps {
+  onAddStock: (stock: Omit<StockItemInput, 'id' | 'created_at' | 'updated_at' | 'date_added'>) => Promise<StockItem>;
 }
 
 export const StockEntry = ({ onAddStock }: StockEntryProps) => {

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { GroupedStockView } from "./GroupedStockView";
-import { StockItem } from "@/hooks/useStocks";
+import { StockItem, StockItemInput } from "@/hooks/useStocks";
 import { 
   Search, 
   ArrowUpDown, 
@@ -21,12 +21,7 @@ import {
 
 interface StockTableProps {
   stocks: StockItem[];
-  onUpdateStock?: (stockId: string, updatedStock: Partial<{
-    batch_number?: string;
-    stock_number?: string;
-    description?: string;
-    quantity?: number;
-  }>) => Promise<void>;
+  onUpdateStock?: (stockId: string, updatedStock: Partial<Omit<StockItemInput, 'id' | 'created_at' | 'updated_at' | 'date_added'>>) => Promise<void>;
   onDeleteStock?: (stockId: string) => Promise<void>;
 }
 
