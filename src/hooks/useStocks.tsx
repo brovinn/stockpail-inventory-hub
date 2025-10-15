@@ -1,10 +1,28 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Database } from "@/integrations/supabase/types";
 
-export type StockItem = Database['public']['Tables']['stocks']['Row'];
-export type StockItemInput = Database['public']['Tables']['stocks']['Insert'];
+export interface StockItem {
+  id: string;
+  batch_number: string;
+  stock_number: string;
+  description: string;
+  quantity: number;
+  date_added: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StockItemInput {
+  id?: string;
+  batch_number: string;
+  stock_number: string;
+  description: string;
+  quantity: number;
+  date_added?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
 export const useStocks = () => {
   const [stocks, setStocks] = useState<StockItem[]>([]);
