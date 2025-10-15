@@ -32,8 +32,8 @@ const Analytics = () => {
     const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const lastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const recentStocks = stocks.filter(s => new Date(s.date_added) >= lastWeek);
-    const monthlyStocks = stocks.filter(s => new Date(s.date_added) >= lastMonth);
+    const recentStocks = stocks.filter(s => new Date(s.dateAdded) >= lastWeek);
+    const monthlyStocks = stocks.filter(s => new Date(s.dateAdded) >= lastMonth);
 
     // Stock trends
     const totalQuantity = stocks.reduce((sum, s) => sum + s.quantity, 0);
@@ -42,7 +42,7 @@ const Analytics = () => {
     
     // Top performers
     const stockNumberCounts = stocks.reduce((acc, stock) => {
-      acc[stock.stock_number] = (acc[stock.stock_number] || 0) + stock.quantity;
+      acc[stock.stockNumber] = (acc[stock.stockNumber] || 0) + stock.quantity;
       return acc;
     }, {} as Record<string, number>);
 
@@ -52,7 +52,7 @@ const Analytics = () => {
 
     // Batch analysis
     const batchCounts = stocks.reduce((acc, stock) => {
-      acc[stock.batch_number] = (acc[stock.batch_number] || 0) + 1;
+      acc[stock.batchNumber] = (acc[stock.batchNumber] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
@@ -70,8 +70,8 @@ const Analytics = () => {
       topStocks,
       topBatches,
       avgQuantityPerItem: totalQuantity / stocks.length,
-      uniqueStockNumbers: new Set(stocks.map(s => s.stock_number)).size,
-      uniqueBatchNumbers: new Set(stocks.map(s => s.batch_number)).size,
+      uniqueStockNumbers: new Set(stocks.map(s => s.stockNumber)).size,
+      uniqueBatchNumbers: new Set(stocks.map(s => s.batchNumber)).size,
     };
   }, [stocks]);
 
@@ -91,12 +91,12 @@ const Analytics = () => {
       
       // Expected headers mapping
       const headerMap: Record<string, string> = {
-        'batch_number': 'batch_number',
-        'batch number': 'batch_number',
-        'batch': 'batch_number',
-        'stock_number': 'stock_number', 
-        'stock number': 'stock_number',
-        'stock': 'stock_number',
+        'batch_number': 'batchNumber',
+        'batch number': 'batchNumber',
+        'batch': 'batchNumber',
+        'stock_number': 'stockNumber', 
+        'stock number': 'stockNumber',
+        'stock': 'stockNumber',
         'description': 'description',
         'desc': 'description',
         'quantity': 'quantity',
@@ -107,7 +107,7 @@ const Analytics = () => {
       const mappedHeaders = headers.map(h => headerMap[h] || h);
       
       // Validate required headers
-      if (!mappedHeaders.includes('batch_number') || !mappedHeaders.includes('stock_number')) {
+      if (!mappedHeaders.includes('batchNumber') || !mappedHeaders.includes('stockNumber')) {
         toast({
           title: "Invalid CSV format",
           description: "CSV must contain 'batch_number' and 'stock_number' columns",
@@ -130,14 +130,14 @@ const Analytics = () => {
             }
           });
 
-          if (rowData.batch_number && rowData.stock_number) {
+          if (rowData.batchNumber && rowData.stockNumber) {
             await addStock({
-              batch_number: rowData.batch_number,
-              stock_number: rowData.stock_number,
+              batchNumber: rowData.batchNumber,
+              stockNumber: rowData.stockNumber,
               description: rowData.description || '',
               quantity: rowData.quantity || 0,
             });
-            successfulImports.push(rowData.stock_number);
+            successfulImports.push(rowData.stockNumber);
           } else {
             failedImports.push(`Row ${i + 1}: Missing required fields`);
           }

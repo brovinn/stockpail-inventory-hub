@@ -16,8 +16,8 @@ export const StockOverview = ({ stocks }: StockOverviewProps) => {
     const outOfStockItems = stocks.filter(stock => stock.quantity === 0).length;
     
     // Group statistics
-    const uniqueStockNumbers = new Set(stocks.map(stock => stock.stock_number)).size;
-    const uniqueBatchNumbers = new Set(stocks.map(stock => stock.batch_number)).size;
+    const uniqueStockNumbers = new Set(stocks.map(stock => stock.stockNumber)).size;
+    const uniqueBatchNumbers = new Set(stocks.map(stock => stock.batchNumber)).size;
     
     return {
       totalItems,

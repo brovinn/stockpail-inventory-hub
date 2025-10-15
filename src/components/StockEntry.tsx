@@ -9,13 +9,13 @@ import { StockItem, StockItemInput } from "@/hooks/useStocks";
 import { Package, Plus } from "lucide-react";
 
 export interface StockEntryProps {
-  onAddStock: (stock: Omit<StockItemInput, 'id' | 'created_at' | 'updated_at' | 'date_added'>) => Promise<StockItem>;
+  onAddStock: (stock: StockItemInput) => Promise<StockItem>;
 }
 
 export const StockEntry = ({ onAddStock }: StockEntryProps) => {
   const [formData, setFormData] = useState({
-    batch_number: "",
-    stock_number: "",
+    batchNumber: "",
+    stockNumber: "",
     description: "",
     quantity: 0,
   });
@@ -24,7 +24,7 @@ export const StockEntry = ({ onAddStock }: StockEntryProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.batch_number || !formData.stock_number) {
+    if (!formData.batchNumber || !formData.stockNumber) {
       toast({
         title: "Required fields missing",
         description: "Please fill in both batch number and stock number.",
@@ -35,15 +35,15 @@ export const StockEntry = ({ onAddStock }: StockEntryProps) => {
 
     try {
       await onAddStock({
-        batch_number: formData.batch_number,
-        stock_number: formData.stock_number,
+        batchNumber: formData.batchNumber,
+        stockNumber: formData.stockNumber,
         description: formData.description,
         quantity: formData.quantity,
       });
       
       setFormData({
-        batch_number: "",
-        stock_number: "",
+        batchNumber: "",
+        stockNumber: "",
         description: "",
         quantity: 0,
       });
@@ -74,8 +74,8 @@ export const StockEntry = ({ onAddStock }: StockEntryProps) => {
               <Label htmlFor="batchNumber">Batch Number *</Label>
               <Input
                 id="batchNumber"
-                value={formData.batch_number}
-                onChange={(e) => handleInputChange("batch_number", e.target.value)}
+                value={formData.batchNumber}
+                onChange={(e) => handleInputChange("batchNumber", e.target.value)}
                 placeholder="e.g. BT2024001"
                 className="focus:ring-primary"
               />
@@ -84,8 +84,8 @@ export const StockEntry = ({ onAddStock }: StockEntryProps) => {
               <Label htmlFor="stockNumber">Stock Number *</Label>
               <Input
                 id="stockNumber"
-                value={formData.stock_number}
-                onChange={(e) => handleInputChange("stock_number", e.target.value)}
+                value={formData.stockNumber}
+                onChange={(e) => handleInputChange("stockNumber", e.target.value)}
                 placeholder="e.g. SK-12345"
                 className="focus:ring-primary"
               />

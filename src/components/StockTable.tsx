@@ -21,16 +21,16 @@ import {
 
 interface StockTableProps {
   stocks: StockItem[];
-  onUpdateStock?: (stockId: string, updatedStock: Partial<Omit<StockItemInput, 'id' | 'created_at' | 'updated_at' | 'date_added'>>) => Promise<void>;
+  onUpdateStock?: (stockId: string, updatedStock: Partial<StockItemInput>) => Promise<void>;
   onDeleteStock?: (stockId: string) => Promise<void>;
 }
 
-type SortField = 'batch_number' | 'stock_number' | 'quantity' | 'date_added';
+type SortField = 'batchNumber' | 'stockNumber' | 'quantity' | 'dateAdded';
 type SortDirection = 'asc' | 'desc';
 
 export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortField, setSortField] = useState<SortField>('date_added');
+  const [sortField, setSortField] = useState<SortField>('dateAdded');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [viewMode, setViewMode] = useState<'list' | 'grouped'>('list');
   const { toast } = useToast();
@@ -40,32 +40,32 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
       case "view":
         toast({
           title: "Stock Details",
-          description: `Viewing details for ${stock.stock_number}`,
+          description: `Viewing details for ${stock.stockNumber}`,
         });
         break;
       case "edit":
         toast({
           title: "Edit Stock",
-          description: `Opening editor for ${stock.stock_number}`,
+          description: `Opening editor for ${stock.stockNumber}`,
         });
         if (onUpdateStock) {
           // This would typically open a modal or form for editing
-          const updatedQuantity = prompt(`Enter new quantity for ${stock.stock_number}:`, stock.quantity.toString());
+          const updatedQuantity = prompt(`Enter new quantity for ${stock.stockNumber}:`, stock.quantity.toString());
           if (updatedQuantity !== null && !isNaN(Number(updatedQuantity))) {
             onUpdateStock(stock.id, { quantity: Number(updatedQuantity) });
             toast({
               title: "Stock Updated",
-              description: `Quantity updated for ${stock.stock_number}`,
+              description: `Quantity updated for ${stock.stockNumber}`,
             });
           }
         }
         break;
       case "delete":
-        if (onDeleteStock && confirm(`Are you sure you want to delete stock item ${stock.stock_number}?`)) {
+        if (onDeleteStock && confirm(`Are you sure you want to delete stock item ${stock.stockNumber}?`)) {
           onDeleteStock(stock.id);
           toast({
             title: "Stock Deleted",
-            description: `${stock.stock_number} has been removed from inventory`,
+            description: `${stock.stockNumber} has been removed from inventory`,
             variant: "destructive",
           });
         }
@@ -85,8 +85,8 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
   // Filter stocks based on search term
   const filteredStocks = useMemo(() => {
     return stocks.filter(stock =>
-      stock.batch_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      stock.stock_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      stock.batchNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      stock.stockNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [stocks, searchTerm]);
@@ -216,7 +216,7 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleSort('batch_number')}
+                        onClick={() => handleSort('batchNumber')}
                         className="h-auto p-0 font-semibold text-foreground hover:text-primary"
                       >
                         Batch Number
@@ -227,30 +227,19 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleSort('stock_number')}
+                        onClick={() => handleSort('stockNumber')}
                         className="h-auto p-0 font-semibold text-foreground hover:text-primary"
                       >
                         Stock Number
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </th>
-                    <th className="text-left p-3">Description</th>
+...
                     <th className="text-left p-3">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleSort('quantity')}
-                        className="h-auto p-0 font-semibold text-foreground hover:text-primary"
-                      >
-                        Quantity
-                        <ArrowUpDown className="ml-2 h-3 w-3" />
-                      </Button>
-                    </th>
-                    <th className="text-left p-3">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleSort('date_added')}
+                        onClick={() => handleSort('dateAdded')}
                         className="h-auto p-0 font-semibold text-foreground hover:text-primary"
                       >
                         Date Added
@@ -265,28 +254,19 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
                     <tr key={stock.id} className="border-b hover:bg-muted/50 transition-colors">
                       <td className="p-3">
                         <div className="font-mono text-sm font-semibold text-primary">
-                          {stock.batch_number}
+                          {stock.batchNumber}
                         </div>
                       </td>
                       <td className="p-3">
                         <div className="font-mono text-sm font-semibold">
-                          {stock.stock_number}
+                          {stock.stockNumber}
                         </div>
                       </td>
-                      <td className="p-3">
-                        <div className="text-sm text-muted-foreground max-w-xs truncate">
-                          {stock.description || "No description"}
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        <Badge variant={getQuantityBadgeVariant(stock.quantity)}>
-                          {stock.quantity}
-                        </Badge>
-                      </td>
+...
                       <td className="p-3">
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          {new Date(stock.date_added).toLocaleDateString()}
+                          {new Date(stock.dateAdded).toLocaleDateString()}
                         </div>
                       </td>
                       <td className="p-3">

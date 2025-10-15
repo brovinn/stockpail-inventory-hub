@@ -11,6 +11,8 @@ export interface StockItem {
   dateAdded: string;
 }
 
+export type StockItemInput = Omit<StockItem, 'id' | 'dateAdded'>;
+
 // Database type (snake_case)
 interface DatabaseStock {
   id: string;
@@ -105,7 +107,7 @@ export const useStocks = () => {
   };
 
   // Update stock
-  const updateStock = async (stockId: string, updates: Partial<StockItem>) => {
+  const updateStock = async (stockId: string, updates: Partial<StockItemInput>): Promise<void> => {
     try {
       const dbUpdates: any = {};
       if (updates.batchNumber !== undefined) dbUpdates.batch_number = updates.batchNumber;
@@ -133,8 +135,6 @@ export const useStocks = () => {
         title: "Success",
         description: "Stock item updated successfully",
       });
-
-      return formattedStock;
     } catch (error) {
       console.error('Error updating stock:', error);
       toast({
