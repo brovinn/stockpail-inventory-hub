@@ -58,6 +58,18 @@ const Layout = () => {
                 Analytics
               </NavLink>
             </TabsTrigger>
+            <TabsTrigger value="/documents" asChild>
+              <NavLink 
+                to="/documents" 
+                className={({ isActive }) => 
+                  `text-white hover:text-white/80 data-[state=active]:bg-white/20 data-[state=active]:text-white ${
+                    isActive ? 'bg-white/20' : ''
+                  }`
+                }
+              >
+                Documents
+              </NavLink>
+            </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>

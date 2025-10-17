@@ -39,8 +39,25 @@
   - Generate reports with scheduling
   - Manage existing forms and reports
 
+### **Document Management**
+- **Location**: `/documents`
+- **File**: `src/pages/Documents.tsx`
+- **Components**:
+  - `src/components/DocumentUpload.tsx` - Upload documents
+  - `src/components/DocumentList.tsx` - View and manage documents
+  - `src/components/DataImportExport.tsx` - Import/Export data
+- **Features**:
+  - Upload PDFs, Excel, CSV, and images (up to 50MB)
+  - Automatic document parsing for CSV files
+  - Search and filter documents by category
+  - Download documents
+  - Delete documents
+  - Import stock data from CSV
+  - Export stock data to CSV or JSON
+
 ## 🗺️ Route Map
 - `/` - Main Dashboard (Forms + Lists)
 - `/home` - Home page
 - `/analytics` - Analytics Dashboard (Charts + Reports)
 - `/presentation` - Form Builder & Report Generator
+- `/documents` - Document Management System
