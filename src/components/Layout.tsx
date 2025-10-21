@@ -22,18 +22,6 @@ const Layout = () => {
             {/* Navigation Tabs */}
             <Tabs value={window.location.pathname} className="w-auto">
               <TabsList className="bg-white/10 border-white/20">
-                <TabsTrigger value="/" asChild>
-                  <NavLink 
-                    to="/" 
-                    className={({ isActive }) => 
-                      `text-white hover:text-white/80 data-[state=active]:bg-white/20 data-[state=active]:text-white ${
-                        isActive ? 'bg-white/20' : ''
-                      }`
-                    }
-                  >
-                    Dashboard
-                  </NavLink>
-                </TabsTrigger>
                 <TabsTrigger value="/home" asChild>
                   <NavLink 
                     to="/home" 
@@ -46,30 +34,42 @@ const Layout = () => {
                     Home
                   </NavLink>
                 </TabsTrigger>
-            <TabsTrigger value="/analytics" asChild>
-              <NavLink 
-                to="/analytics" 
-                className={({ isActive }) => 
-                  `text-white hover:text-white/80 data-[state=active]:bg-white/20 data-[state=active]:text-white ${
-                    isActive ? 'bg-white/20' : ''
-                  }`
-                }
-              >
-                Analytics
-              </NavLink>
-            </TabsTrigger>
-            <TabsTrigger value="/documents" asChild>
-              <NavLink 
-                to="/documents" 
-                className={({ isActive }) => 
-                  `text-white hover:text-white/80 data-[state=active]:bg-white/20 data-[state=active]:text-white ${
-                    isActive ? 'bg-white/20' : ''
-                  }`
-                }
-              >
-                Documents
-              </NavLink>
-            </TabsTrigger>
+                <TabsTrigger value="/analytics" asChild>
+                  <NavLink 
+                    to="/analytics" 
+                    className={({ isActive }) => 
+                      `text-white hover:text-white/80 data-[state=active]:bg-white/20 data-[state=active]:text-white ${
+                        isActive ? 'bg-white/20' : ''
+                      }`
+                    }
+                  >
+                    Analytics
+                  </NavLink>
+                </TabsTrigger>
+                <TabsTrigger value="/documents" asChild>
+                  <NavLink 
+                    to="/documents" 
+                    className={({ isActive }) => 
+                      `text-white hover:text-white/80 data-[state=active]:bg-white/20 data-[state=active]:text-white ${
+                        isActive ? 'bg-white/20' : ''
+                      }`
+                    }
+                  >
+                    Documents
+                  </NavLink>
+                </TabsTrigger>
+                <TabsTrigger value="/" asChild>
+                  <NavLink 
+                    to="/" 
+                    className={({ isActive }) => 
+                      `text-white hover:text-white/80 data-[state=active]:bg-white/20 data-[state=active]:text-white ${
+                        isActive ? 'bg-white/20' : ''
+                      }`
+                    }
+                  >
+                    Dashboard
+                  </NavLink>
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
