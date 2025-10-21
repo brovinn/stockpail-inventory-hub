@@ -193,44 +193,6 @@ const Home = () => {
         </Card>
       </section>
 
-      {/* System Stats */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-foreground">System Overview</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">98%</div>
-                <p className="text-sm text-muted-foreground">System Health</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-success">24/7</div>
-                <p className="text-sm text-muted-foreground">Availability</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-warning">3</div>
-                <p className="text-sm text-muted-foreground">Pending Tasks</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-foreground">156</div>
-                <p className="text-sm text-muted-foreground">Total Items</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
     </div>
   );
 };
