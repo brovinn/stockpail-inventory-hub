@@ -1,22 +1,20 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useStocks } from "@/hooks/useStocks";
+import { StockTable } from "@/components/StockTable";
 import { 
   Package, 
-  TrendingUp, 
-  AlertTriangle, 
   FileText, 
   BarChart3,
-  Clock,
-  CheckCircle,
-  XCircle
+  Database
 } from "lucide-react";
 
 const Home = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { stocks, loading, updateStock, deleteStock } = useStocks();
   const handleQuickAction = (actionType: string) => {
     switch (actionType) {
       case "dashboard":
@@ -71,52 +69,9 @@ const Home = () => {
     }
   ];
 
-  const recentActivities = [
-    {
-      type: "addition",
-      item: "Batch #B001 - Widget A",
-      time: "2 hours ago",
-      status: "completed"
-    },
-    {
-      type: "update",
-      item: "Stock #S123 - Component B",
-      time: "4 hours ago", 
-      status: "pending"
-    },
-    {
-      type: "alert",
-      item: "Low Stock Alert - Item C",
-      time: "6 hours ago",
-      status: "warning"
-    }
-  ];
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="h-4 w-4 text-success" />;
-      case 'pending':
-        return <Clock className="h-4 w-4 text-warning" />;
-      case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-destructive" />;
-      default:
-        return <XCircle className="h-4 w-4 text-muted-foreground" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-success/10 text-success';
-      case 'pending':
-        return 'bg-warning/10 text-warning';
-      case 'warning':
-        return 'bg-destructive/10 text-destructive';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
+  // Get unique stock names
+  const uniqueStockNames = Array.from(new Set(stocks.map(s => s.stockNumber)));
+  const uniqueBatchNumbers = Array.from(new Set(stocks.map(s => s.batchNumber)));
 
   return (
     <div className="space-y-8">
@@ -159,39 +114,104 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Recent Activity */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-foreground">Recent Activity</h2>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Latest Updates
-            </CardTitle>
-            <CardDescription>
-              Track your recent inventory changes and alerts
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentActivities.map((activity, index) => (
-                <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    {getStatusIcon(activity.status)}
-                    <div>
-                      <p className="font-medium text-foreground">{activity.item}</p>
-                      <p className="text-sm text-muted-foreground">{activity.time}</p>
-                    </div>
+      {/* Stock Overview */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-lg text-muted-foreground">Loading stock data...</div>
+        </div>
+      ) : stocks.length === 0 ? (
+        <section className="space-y-4">
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+              <Database className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold text-foreground mb-2">No Data in System</h3>
+              <p className="text-muted-foreground mb-6 max-w-md">
+                Your inventory is empty. Start by adding your first stock item to get started with tracking your inventory.
+              </p>
+              <Button onClick={() => navigate("/")}>
+                <Package className="mr-2 h-4 w-4" />
+                Add First Stock Item
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+      ) : (
+        <>
+          {/* Stock Names Summary */}
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-foreground">Inventory Summary</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="h-5 w-5" />
+                    Stock Numbers
+                  </CardTitle>
+                  <CardDescription>
+                    {uniqueStockNames.length} unique stock {uniqueStockNames.length === 1 ? 'item' : 'items'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueStockNames.slice(0, 10).map((stockName) => (
+                      <span
+                        key={stockName}
+                        className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium"
+                      >
+                        {stockName}
+                      </span>
+                    ))}
+                    {uniqueStockNames.length > 10 && (
+                      <span className="px-3 py-1 bg-muted text-muted-foreground rounded-full text-sm">
+                        +{uniqueStockNames.length - 10} more
+                      </span>
+                    )}
                   </div>
-                  <Badge variant="secondary" className={getStatusColor(activity.status)}>
-                    {activity.status}
-                  </Badge>
-                </div>
-              ))}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="h-5 w-5" />
+                    Batch Numbers
+                  </CardTitle>
+                  <CardDescription>
+                    {uniqueBatchNumbers.length} unique {uniqueBatchNumbers.length === 1 ? 'batch' : 'batches'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueBatchNumbers.slice(0, 10).map((batchNumber) => (
+                      <span
+                        key={batchNumber}
+                        className="px-3 py-1 bg-secondary/50 text-secondary-foreground rounded-full text-sm font-medium"
+                      >
+                        {batchNumber}
+                      </span>
+                    ))}
+                    {uniqueBatchNumbers.length > 10 && (
+                      <span className="px-3 py-1 bg-muted text-muted-foreground rounded-full text-sm">
+                        +{uniqueBatchNumbers.length - 10} more
+                      </span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
-      </section>
+          </section>
+
+          {/* Stock Table */}
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-foreground">Stock Inventory</h2>
+            <StockTable 
+              stocks={stocks}
+              onUpdateStock={updateStock}
+              onDeleteStock={deleteStock}
+            />
+          </section>
+        </>
+      )}
 
     </div>
   );
