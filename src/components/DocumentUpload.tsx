@@ -56,7 +56,7 @@ export const DocumentUpload = () => {
           Upload Document
         </CardTitle>
         <CardDescription>
-          Upload PDFs, Excel files, CSV, or images (Max 50MB)
+          Upload PDFs, Excel, CSV, Word, SQL, Database files, or images (Max 50MB)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -65,7 +65,7 @@ export const DocumentUpload = () => {
           <Input
             id="file"
             type="file"
-            accept=".pdf,.xlsx,.xls,.csv,.jpg,.jpeg,.png,.webp,.doc,.docx"
+            accept=".pdf,.xlsx,.xls,.csv,.jpg,.jpeg,.png,.webp,.doc,.docx,.sql,.db,.sqlite,.txt"
             onChange={handleFileChange}
             disabled={uploading}
           />
