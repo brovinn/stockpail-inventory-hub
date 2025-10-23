@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Database, Plus, Trash2, Save, FileCode, Eye, Table as TableIcon } from 'lucide-react';
+import { Database, Plus, Trash2, Save, FileCode, Eye, Table as TableIcon, Rocket } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -192,6 +193,23 @@ export const SqlDatabaseDesigner = () => {
     });
   };
 
+  const copyToClipboard = async () => {
+    const sql = generateSQL();
+    try {
+      await navigator.clipboard.writeText(sql);
+      toast({
+        title: 'Copied!',
+        description: 'SQL copied to clipboard. Now paste it in Supabase SQL Editor.',
+      });
+      
+      // Open Supabase SQL Editor in new tab
+      window.open('https://supabase.com/dashboard/project/enfadxolrysdhjumusjk/sql/new', '_blank');
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      exportSQL();
+    }
+  };
+
   const currentTable = tables.find(t => t.id === selectedTable);
 
   return (
@@ -301,12 +319,19 @@ export const SqlDatabaseDesigner = () => {
                         <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto max-h-[300px]">
                           {generateSQL()}
                         </pre>
-                        <div className="flex gap-2 mt-4">
+                        <div className="flex gap-2 flex-wrap mt-4">
+                          <Button onClick={copyToClipboard}>
+                            <Rocket className="h-4 w-4 mr-2" />
+                            Create in Database
+                          </Button>
                           <Button onClick={exportSQL} variant="outline">
                             <Save className="h-4 w-4 mr-2" />
-                            Export SQL
+                            Save SQL Locally
                           </Button>
                         </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Click "Create in Database" to copy SQL and open Supabase SQL Editor
+                        </p>
                       </CardContent>
                     </Card>
                   )}

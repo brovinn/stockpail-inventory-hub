@@ -24,20 +24,51 @@ export const DocumentEditor = () => {
     }
   }, [selectedDoc]);
 
-  const handleSave = () => {
+  const handleSave = (format: 'txt' | 'doc' | 'pdf') => {
     if (!selectedDoc) return;
 
-    const blob = new Blob([editedContent], { type: 'text/plain' });
+    let blob: Blob;
+    let fileName: string;
+    const baseName = selectedDoc.file_name.replace(/\.[^/.]+$/, '');
+
+    if (format === 'txt') {
+      blob = new Blob([editedContent], { type: 'text/plain' });
+      fileName = `${baseName}-edited.txt`;
+    } else if (format === 'doc') {
+      // Create a simple Word-compatible HTML format
+      const docContent = `<html><head><meta charset="utf-8"/></head><body>${editedContent.replace(/\n/g, '<br/>')}</body></html>`;
+      blob = new Blob([docContent], { type: 'application/msword' });
+      fileName = `${baseName}-edited.doc`;
+    } else {
+      // For PDF, we'll create HTML (browsers can save as PDF)
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8"/>
+          <title>${baseName}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+            pre { white-space: pre-wrap; }
+          </style>
+        </head>
+        <body><pre>${editedContent}</pre></body>
+        </html>
+      `;
+      blob = new Blob([htmlContent], { type: 'text/html' });
+      fileName = `${baseName}-edited.html`;
+    }
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${selectedDoc.file_name.replace(/\.[^/.]+$/, '')}-edited.txt`;
+    a.download = fileName;
     a.click();
     URL.revokeObjectURL(url);
 
     toast({
-      title: 'Success',
-      description: 'Document saved successfully',
+      title: 'Saved Locally',
+      description: `Document saved to your device as ${format.toUpperCase()}`,
     });
   };
 
@@ -155,14 +186,18 @@ export const DocumentEditor = () => {
                             className="font-mono min-h-[400px]"
                             placeholder="Document content will appear here..."
                           />
-                          <div className="flex gap-2">
-                            <Button onClick={handleSave} className="flex-1">
-                              <Save className="h-4 w-4 mr-2" />
-                              Save Changes
-                            </Button>
-                            <Button variant="outline" onClick={handleSave}>
+                          <div className="flex gap-2 flex-wrap">
+                            <Button onClick={() => handleSave('txt')} variant="outline">
                               <Download className="h-4 w-4 mr-2" />
-                              Download
+                              Save as TXT
+                            </Button>
+                            <Button onClick={() => handleSave('doc')} variant="outline">
+                              <Download className="h-4 w-4 mr-2" />
+                              Save as DOC
+                            </Button>
+                            <Button onClick={() => handleSave('pdf')} variant="outline">
+                              <Download className="h-4 w-4 mr-2" />
+                              Save as HTML/PDF
                             </Button>
                           </div>
                         </>

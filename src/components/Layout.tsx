@@ -70,6 +70,18 @@ const Layout = () => {
                     Dashboard
                   </NavLink>
                 </TabsTrigger>
+                <TabsTrigger value="/install" asChild>
+                  <NavLink 
+                    to="/install" 
+                    className={({ isActive }) => 
+                      `text-white hover:text-white/80 data-[state=active]:bg-white/20 data-[state=active]:text-white ${
+                        isActive ? 'bg-white/20' : ''
+                      }`
+                    }
+                  >
+                    Install
+                  </NavLink>
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>

@@ -77,8 +77,34 @@ export const SpreadsheetEditor = () => {
     URL.revokeObjectURL(url);
 
     toast({
-      title: 'Success',
-      description: 'Spreadsheet exported as CSV',
+      title: 'Saved Locally',
+      description: 'Spreadsheet saved to your device as CSV',
+    });
+  };
+
+  const handleExportExcel = () => {
+    // Create a simple Excel-compatible format
+    let excel = '<html><head><meta charset="utf-8"/></head><body><table>';
+    for (let r = 0; r < rows; r++) {
+      excel += '<tr>';
+      for (let c = 0; c < cols; c++) {
+        excel += `<td>${getCellValue(r, c)}</td>`;
+      }
+      excel += '</tr>';
+    }
+    excel += '</table></body></html>';
+
+    const blob = new Blob([excel], { type: 'application/vnd.ms-excel' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `spreadsheet-${Date.now()}.xls`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: 'Saved Locally',
+      description: 'Spreadsheet saved to your device as Excel',
     });
   };
 
@@ -127,10 +153,14 @@ export const SpreadsheetEditor = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button onClick={handleExportCSV} variant="outline" size="sm">
               <Download className="h-4 w-4 mr-2" />
-              Export CSV
+              Save as CSV
+            </Button>
+            <Button onClick={handleExportExcel} variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Save as Excel
             </Button>
             <label>
               <Button variant="outline" size="sm" asChild>
