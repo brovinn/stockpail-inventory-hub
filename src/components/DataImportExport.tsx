@@ -4,8 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useStocks } from '@/hooks/useStocks';
+import * as XLSX from 'xlsx';
 
 export const DataImportExport = () => {
   const { stocks, addStock } = useStocks();
@@ -79,6 +81,78 @@ export const DataImportExport = () => {
     toast({
       title: 'Success',
       description: `Exported ${stocks.length} stock items`,
+    });
+  };
+
+  const handleExportExcel = () => {
+    if (stocks.length === 0) {
+      toast({
+        title: 'No data',
+        description: 'No stock data to export',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const worksheetData = stocks.map((stock) => ({
+      'Batch Number': stock.batchNumber,
+      'Stock Number': stock.stockNumber,
+      'Description': stock.description,
+      'Quantity': stock.quantity,
+      'Date Added': new Date(stock.dateAdded).toLocaleDateString(),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Stock Data');
+    XLSX.writeFile(workbook, `stock-export-${Date.now()}.xlsx`);
+
+    toast({
+      title: 'Success',
+      description: `Exported ${stocks.length} stock items`,
+    });
+  };
+
+  const handleExportSQL = () => {
+    if (stocks.length === 0) {
+      toast({
+        title: 'No data',
+        description: 'No stock data to export',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    let sql = '-- Stock Data Export\n\n';
+    sql += 'CREATE TABLE IF NOT EXISTS stocks (\n';
+    sql += '  id VARCHAR(36) PRIMARY KEY,\n';
+    sql += '  batch_number VARCHAR(255) NOT NULL,\n';
+    sql += '  stock_number VARCHAR(255) NOT NULL,\n';
+    sql += '  description TEXT,\n';
+    sql += '  quantity INTEGER DEFAULT 0,\n';
+    sql += '  date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n';
+    sql += ');\n\n';
+
+    stocks.forEach((stock) => {
+      const dateAdded = new Date(stock.dateAdded).toISOString();
+      
+      sql += `INSERT INTO stocks (id, batch_number, stock_number, description, quantity, date_added) VALUES `;
+      sql += `('${stock.id}', '${stock.batchNumber.replace(/'/g, "''")}', '${stock.stockNumber.replace(/'/g, "''")}', '${stock.description.replace(/'/g, "''")}', ${stock.quantity}, '${dateAdded}');\n`;
+    });
+
+    const blob = new Blob([sql], { type: 'text/sql' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `stock-export-${Date.now()}.sql`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: 'Success',
+      description: `Exported ${stocks.length} stock items as SQL`,
     });
   };
 
@@ -173,6 +247,62 @@ export const DataImportExport = () => {
     }
   };
 
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const row of jsonData as any[]) {
+        try {
+          const batchNumber = row['Batch Number'] || row['batch_number'] || row['Batch'] || '';
+          const stockNumber = row['Stock Number'] || row['stock_number'] || row['Stock'] || '';
+          const description = row['Description'] || row['description'] || '';
+          const quantity = parseInt(row['Quantity'] || row['quantity'] || '0');
+
+          if (batchNumber && stockNumber) {
+            await addStock({
+              batchNumber,
+              stockNumber,
+              description,
+              quantity,
+            });
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch (error) {
+          failCount++;
+          console.error('Error importing row:', error);
+        }
+      }
+
+      toast({
+        title: 'Import complete',
+        description: `Imported ${successCount} items. ${failCount} failed.`,
+      });
+
+      e.target.value = '';
+    } catch (error: any) {
+      toast({
+        title: 'Import failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Export Section */}
@@ -191,9 +321,17 @@ export const DataImportExport = () => {
             <FileSpreadsheet className="mr-2 h-4 w-4" />
             Export as CSV
           </Button>
+          <Button onClick={handleExportExcel} className="w-full" variant="outline">
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            Export as Excel
+          </Button>
           <Button onClick={handleExportJSON} className="w-full" variant="outline">
             <Database className="mr-2 h-4 w-4" />
             Export as JSON
+          </Button>
+          <Button onClick={handleExportSQL} className="w-full" variant="outline">
+            <Database className="mr-2 h-4 w-4" />
+            Export as SQL
           </Button>
           <p className="text-xs text-muted-foreground text-center pt-2">
             {stocks.length} stock items available for export
@@ -231,6 +369,20 @@ export const DataImportExport = () => {
           <Button onClick={handleImportCSV} className="w-full" disabled={importing}>
             {importing ? 'Importing...' : 'Import CSV Data'}
           </Button>
+
+          <div className="space-y-2">
+            <Label htmlFor="excelImport">Excel File</Label>
+            <p className="text-xs text-muted-foreground">
+              Upload .xlsx or .xls file with columns: Batch Number, Stock Number, Description, Quantity
+            </p>
+            <Input
+              id="excelImport"
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleImportExcel}
+              disabled={importing}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>
