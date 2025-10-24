@@ -39,6 +39,7 @@ export const StockEntry = ({ onAddStock }: StockEntryProps) => {
         stockNumber: formData.stockNumber,
         description: formData.description,
         quantity: formData.quantity,
+        status: 'available',
       });
       
       setFormData({

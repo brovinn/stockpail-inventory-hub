@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+export type StockStatus = 'available' | 'pending' | 'shipped' | 'missing' | 'contaminated';
+
 export interface StockItem {
   id: string;
   batchNumber: string;
   stockNumber: string;
   description: string;
   quantity: number;
+  status: StockStatus;
   dateAdded: string;
 }
 
@@ -20,6 +23,7 @@ interface DatabaseStock {
   stock_number: string;
   description: string;
   quantity: number;
+  status?: StockStatus;
   date_added: string;
 }
 
@@ -30,6 +34,7 @@ const dbToFrontend = (dbStock: DatabaseStock): StockItem => ({
   stockNumber: dbStock.stock_number,
   description: dbStock.description,
   quantity: dbStock.quantity,
+  status: dbStock.status || 'available',
   dateAdded: dbStock.date_added,
 });
 
@@ -39,6 +44,7 @@ const frontendToDb = (stock: Omit<StockItem, 'id'>): Omit<DatabaseStock, 'id' | 
   stock_number: stock.stockNumber,
   description: stock.description,
   quantity: stock.quantity,
+  status: stock.status,
 });
 
 export const useStocks = () => {
@@ -114,6 +120,7 @@ export const useStocks = () => {
       if (updates.stockNumber !== undefined) dbUpdates.stock_number = updates.stockNumber;
       if (updates.description !== undefined) dbUpdates.description = updates.description;
       if (updates.quantity !== undefined) dbUpdates.quantity = updates.quantity;
+      if (updates.status !== undefined) dbUpdates.status = updates.status;
 
       const { data, error } = await supabase
         .from('stocks')

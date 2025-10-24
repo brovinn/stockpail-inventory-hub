@@ -217,6 +217,7 @@ export const DataImportExport = () => {
               stockNumber: rowData.stockNumber,
               description: rowData.description || '',
               quantity: rowData.quantity || 0,
+              status: 'available',
             });
             successCount++;
           } else {
@@ -275,6 +276,7 @@ export const DataImportExport = () => {
               stockNumber,
               description,
               quantity,
+              status: 'available',
             });
             successCount++;
           } else {

@@ -75,16 +75,29 @@ const Analytics = () => {
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 10);
 
-    // Quantity distribution for pie chart
+    // Status distribution for pie chart
     const totalQuantity = filteredStocks.reduce((sum, s) => sum + s.quantity, 0);
-    const available = filteredStocks.filter(s => s.quantity > 10).reduce((sum, s) => sum + s.quantity, 0);
-    const lowStock = filteredStocks.filter(s => s.quantity > 0 && s.quantity <= 10).reduce((sum, s) => sum + s.quantity, 0);
-    const unavailable = filteredStocks.filter(s => s.quantity === 0).length;
+    
+    const statusCounts = {
+      available: filteredStocks.filter(s => s.status === 'available').length,
+      pending: filteredStocks.filter(s => s.status === 'pending').length,
+      shipped: filteredStocks.filter(s => s.status === 'shipped').length,
+      missing: filteredStocks.filter(s => s.status === 'missing').length,
+      contaminated: filteredStocks.filter(s => s.status === 'contaminated').length,
+    };
+
+    const statusDistribution = [
+      { name: 'Available', value: statusCounts.available },
+      { name: 'Pending', value: statusCounts.pending },
+      { name: 'Shipped', value: statusCounts.shipped },
+      { name: 'Missing', value: statusCounts.missing },
+      { name: 'Contaminated', value: statusCounts.contaminated },
+    ].filter(item => item.value > 0);
 
     const quantityStatus = [
-      { name: 'Available (>10)', value: available },
-      { name: 'Low Stock (1-10)', value: lowStock },
-      { name: 'Out of Stock', value: unavailable },
+      { name: 'Available (>10)', value: filteredStocks.filter(s => s.quantity > 10).reduce((sum, s) => sum + s.quantity, 0) },
+      { name: 'Low Stock (1-10)', value: filteredStocks.filter(s => s.quantity > 0 && s.quantity <= 10).reduce((sum, s) => sum + s.quantity, 0) },
+      { name: 'Out of Stock', value: filteredStocks.filter(s => s.quantity === 0).length },
     ].filter(item => item.value > 0);
 
     // Stock type distribution for pie chart
@@ -102,7 +115,9 @@ const Analytics = () => {
       stockByType,
       batchDistribution,
       quantityStatus,
+      statusDistribution,
       stockTypeData,
+      statusCounts,
     };
   }, [filteredStocks]);
 
@@ -171,44 +186,54 @@ const Analytics = () => {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Available</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{analytics.totalItems}</div>
-            <p className="text-xs text-muted-foreground mt-1">Stock items in period</p>
+            <div className="text-3xl font-bold text-green-600">{analytics.statusCounts.available}</div>
+            <p className="text-xs text-muted-foreground mt-1">Ready stock</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Quantity</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Pending</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{analytics.totalQuantity}</div>
-            <p className="text-xs text-muted-foreground mt-1">Units in inventory</p>
+            <div className="text-3xl font-bold text-yellow-600">{analytics.statusCounts.pending}</div>
+            <p className="text-xs text-muted-foreground mt-1">Processing</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Stock Types</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Shipped</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{analytics.uniqueStockNumbers}</div>
-            <p className="text-xs text-muted-foreground mt-1">Unique stock numbers</p>
+            <div className="text-3xl font-bold text-blue-600">{analytics.statusCounts.shipped}</div>
+            <p className="text-xs text-muted-foreground mt-1">In transit</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Batches</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Missing</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{analytics.uniqueBatchNumbers}</div>
-            <p className="text-xs text-muted-foreground mt-1">Unique batch numbers</p>
+            <div className="text-3xl font-bold text-red-600">{analytics.statusCounts.missing}</div>
+            <p className="text-xs text-muted-foreground mt-1">Not found</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Contaminated</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-orange-600">{analytics.statusCounts.contaminated}</div>
+            <p className="text-xs text-muted-foreground mt-1">Damaged</p>
           </CardContent>
         </Card>
       </div>
@@ -257,12 +282,41 @@ const Analytics = () => {
       </div>
 
       {/* Pie Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Status Distribution Pie Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Status Distribution</CardTitle>
+            <CardDescription>Items by status</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={analytics.statusDistribution}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {analytics.statusDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
         {/* Quantity Status Pie Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Stock Availability Status</CardTitle>
-            <CardDescription>Distribution by stock level</CardDescription>
+            <CardTitle>Stock Availability</CardTitle>
+            <CardDescription>By quantity level</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -290,7 +344,7 @@ const Analytics = () => {
         {/* Stock Type Distribution Pie Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Stock Type Distribution</CardTitle>
+            <CardTitle>Type Distribution</CardTitle>
             <CardDescription>Items by stock number</CardDescription>
           </CardHeader>
           <CardContent>

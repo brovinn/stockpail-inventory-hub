@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DatabaseTableViewer } from './DatabaseTableViewer';
 
 type FieldType = 'VARCHAR' | 'INT' | 'BIGINT' | 'TEXT' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'DECIMAL' | 'FLOAT';
 
@@ -294,6 +295,8 @@ export const SqlDatabaseDesigner = () => {
 
   return (
     <div className="space-y-6">
+      <DatabaseTableViewer />
+      
       <Card className="bg-gradient-card shadow-professional-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

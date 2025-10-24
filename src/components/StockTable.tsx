@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { GroupedStockView } from "./GroupedStockView";
+import { StockEditDialog } from "./StockEditDialog";
 import { StockItem, StockItemInput } from "@/hooks/useStocks";
 import { 
   Search, 
@@ -33,6 +34,8 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
   const [sortField, setSortField] = useState<SortField>('dateAdded');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [viewMode, setViewMode] = useState<'list' | 'grouped'>('list');
+  const [editingStock, setEditingStock] = useState<StockItem | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const handleStockAction = (action: string, stock: StockItem) => {
@@ -44,21 +47,8 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
         });
         break;
       case "edit":
-        toast({
-          title: "Edit Stock",
-          description: `Opening editor for ${stock.stockNumber}`,
-        });
-        if (onUpdateStock) {
-          // This would typically open a modal or form for editing
-          const updatedQuantity = prompt(`Enter new quantity for ${stock.stockNumber}:`, stock.quantity.toString());
-          if (updatedQuantity !== null && !isNaN(Number(updatedQuantity))) {
-            onUpdateStock(stock.id, { quantity: Number(updatedQuantity) });
-            toast({
-              title: "Stock Updated",
-              description: `Quantity updated for ${stock.stockNumber}`,
-            });
-          }
-        }
+        setEditingStock(stock);
+        setEditDialogOpen(true);
         break;
       case "delete":
         if (onDeleteStock && confirm(`Are you sure you want to delete stock item ${stock.stockNumber}?`)) {
@@ -70,6 +60,12 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
           });
         }
         break;
+    }
+  };
+
+  const handleSaveStock = async (stockId: string, updates: Partial<StockItemInput>) => {
+    if (onUpdateStock) {
+      await onUpdateStock(stockId, updates);
     }
   };
 
@@ -116,8 +112,26 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
     return "default";
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'available': return 'bg-green-500/10 text-green-600';
+      case 'pending': return 'bg-yellow-500/10 text-yellow-600';
+      case 'shipped': return 'bg-blue-500/10 text-blue-600';
+      case 'missing': return 'bg-red-500/10 text-red-600';
+      case 'contaminated': return 'bg-orange-500/10 text-orange-600';
+      default: return 'bg-gray-500/10 text-gray-600';
+    }
+  };
+
   return (
-    <Card className="bg-gradient-card shadow-professional-md">
+    <>
+      <StockEditDialog
+        stock={editingStock}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSave={handleSaveStock}
+      />
+      <Card className="bg-gradient-card shadow-professional-md">
       <CardHeader>
         <div className="flex items-center gap-2">
           <Package2 className="h-5 w-5 text-primary" />
@@ -246,6 +260,7 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </th>
+                    <th className="text-left p-3">Status</th>
                     <th className="text-left p-3">Actions</th>
                   </tr>
                 </thead>
@@ -268,6 +283,11 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
                           <Calendar className="h-3 w-3" />
                           {new Date(stock.dateAdded).toLocaleDateString()}
                         </div>
+                      </td>
+                      <td className="p-3">
+                        <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(stock.status)}`}>
+                          {stock.status}
+                        </span>
                       </td>
                       <td className="p-3">
                         <div className="flex items-center gap-1">
@@ -306,5 +326,6 @@ export const StockTable = ({ stocks, onUpdateStock, onDeleteStock }: StockTableP
         )}
       </CardContent>
     </Card>
+    </>
   );
 };
