@@ -51,7 +51,20 @@ const Analytics = () => {
 
   // Analytics calculations
   const analytics = useMemo(() => {
-    if (!filteredStocks.length) return null;
+    if (!filteredStocks.length) {
+      return {
+        totalItems: 0,
+        totalQuantity: 0,
+        uniqueStockNumbers: 0,
+        uniqueBatchNumbers: 0,
+        stockByType: [],
+        batchDistribution: [],
+        quantityStatus: [],
+        statusDistribution: [],
+        stockTypeData: [],
+        statusCounts: { available: 0, pending: 0, shipped: 0, missing: 0, contaminated: 0 },
+      };
+    }
 
     // Stock by type (stock number) - for bar chart
     const stockByType = Object.entries(
@@ -146,21 +159,6 @@ const Analytics = () => {
     );
   }
 
-  if (!analytics) {
-    return (
-      <div className="space-y-6">
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <Calendar className="h-20 w-20 text-muted-foreground mb-4" />
-            <h2 className="text-2xl font-bold mb-2">No Data for Selected Period</h2>
-            <p className="text-muted-foreground mb-6 max-w-md">
-              No stock data found for the selected time period. Try selecting a different time range.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-8">
