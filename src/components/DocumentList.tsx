@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Trash2, FileText, Image, FileSpreadsheet, Search, Filter } from 'lucide-react';
+import { Download, Trash2, FileText, Image, FileSpreadsheet, Search, Filter, Eye } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,11 +24,14 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useDocuments, type Document } from '@/hooks/useDocuments';
+import { DocumentViewer } from './DocumentViewer';
 
 export const DocumentList = () => {
   const { documents, loading, downloadDocument, deleteDocument } = useDocuments();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
+  const [viewingDocument, setViewingDocument] = useState<Document | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   const getFileIcon = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase();
@@ -73,8 +76,19 @@ export const DocumentList = () => {
     );
   }
 
+  const handleViewDocument = (doc: Document) => {
+    setViewingDocument(doc);
+    setViewerOpen(true);
+  };
+
   return (
-    <Card className="bg-gradient-card shadow-professional-md">
+    <>
+      <DocumentViewer
+        document={viewingDocument}
+        open={viewerOpen}
+        onOpenChange={setViewerOpen}
+      />
+      <Card className="bg-gradient-card shadow-professional-md">
       <CardHeader>
         <CardTitle>Document Library</CardTitle>
         <CardDescription>
@@ -174,7 +188,16 @@ export const DocumentList = () => {
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => handleViewDocument(doc)}
+                          title="View document"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => downloadDocument(doc)}
+                          title="Download document"
                         >
                           <Download className="h-4 w-4" />
                         </Button>
@@ -211,5 +234,6 @@ export const DocumentList = () => {
         )}
       </CardContent>
     </Card>
+    </>
   );
 };
