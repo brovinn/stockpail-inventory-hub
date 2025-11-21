@@ -146,12 +146,53 @@ const Analytics = () => {
   if (!stocks.length) {
     return (
       <div className="space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+            <p className="text-muted-foreground">Stock trends and insights</p>
+          </div>
+        </div>
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <Database className="h-20 w-20 text-muted-foreground mb-4" />
             <h2 className="text-2xl font-bold mb-2">No Data in System</h2>
             <p className="text-muted-foreground mb-6 max-w-md">
               There are no stock items to analyze. Add some inventory data to see charts and statistics.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!filteredStocks.length) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+            <p className="text-muted-foreground">Stock trends and insights</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-muted-foreground" />
+            <Select value={timePeriod} onValueChange={(value) => setTimePeriod(value as TimePeriod)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="week">Last Week</SelectItem>
+                <SelectItem value="2weeks">Last 2 Weeks</SelectItem>
+                <SelectItem value="month">Last Month</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <Calendar className="h-20 w-20 text-muted-foreground mb-4" />
+            <h2 className="text-2xl font-bold mb-2">No Data for Selected Period</h2>
+            <p className="text-muted-foreground mb-6 max-w-md">
+              No stock data found for the selected time period. Try selecting a different time range.
             </p>
           </CardContent>
         </Card>
