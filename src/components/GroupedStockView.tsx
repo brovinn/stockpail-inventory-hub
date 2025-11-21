@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { StockEditDialog } from "./StockEditDialog";
 import { StockItem, StockItemInput } from "@/hooks/useStocks";
 import { 
   ChevronDown, 
@@ -37,6 +38,8 @@ export const GroupedStockView = ({
 }: GroupedStockViewProps) => {
   const { toast } = useToast();
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [editingStock, setEditingStock] = useState<StockItem | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   // Group stocks by the specified field
   const groupedStocks: GroupedData = stocks.reduce((groups, stock) => {
@@ -76,20 +79,8 @@ export const GroupedStockView = ({
         });
         break;
       case "edit":
-        toast({
-          title: "Edit Stock",
-          description: `Opening editor for ${stock.stockNumber}`,
-        });
-        if (onUpdateStock) {
-          const updatedQuantity = prompt(`Enter new quantity for ${stock.stockNumber}:`, stock.quantity.toString());
-          if (updatedQuantity !== null && !isNaN(Number(updatedQuantity))) {
-            onUpdateStock(stock.id, { quantity: Number(updatedQuantity) });
-            toast({
-              title: "Stock Updated",
-              description: `Quantity updated for ${stock.stockNumber}`,
-            });
-          }
-        }
+        setEditingStock(stock);
+        setEditDialogOpen(true);
         break;
       case "delete":
         if (onDeleteStock && confirm(`Are you sure you want to delete stock item ${stock.stockNumber}?`)) {
@@ -101,6 +92,12 @@ export const GroupedStockView = ({
           });
         }
         break;
+    }
+  };
+
+  const handleSaveStock = async (stockId: string, updates: Partial<StockItemInput>) => {
+    if (onUpdateStock) {
+      await onUpdateStock(stockId, updates);
     }
   };
 
@@ -120,7 +117,14 @@ export const GroupedStockView = ({
   }
 
   return (
-    <div className="space-y-4">
+    <>
+      <StockEditDialog
+        stock={editingStock}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSave={handleSaveStock}
+      />
+      <div className="space-y-4">
       {Object.entries(groupedStocks)
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([groupKey, groupData]) => {
@@ -229,6 +233,7 @@ export const GroupedStockView = ({
             </Card>
           );
         })}
-    </div>
+      </div>
+    </>
   );
 };
